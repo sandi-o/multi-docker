@@ -1,0 +1,16 @@
+sudo: required
+services:
+  - docker
+
+before_install:
+  - docker build -t sandi-o/react-test -f ./client/Dockerfile ./client
+
+success:
+  - docker run sandi-o/react-test npm test -- --coverage
+
+after_install:
+  - docker build -t sandi-o/multi-client ./client
+  - docker build -t sandi-o/multi-server ./server
+  - docker build -t sandi-o/multi-worker ./worker
+  - docker build -t sandi-o/multi-nginx ./nginx
+
