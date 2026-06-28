@@ -3,14 +3,20 @@ services:
   - docker
 
 before_install:
-  - docker build -t sandi-o/react-test -f ./client/Dockerfile ./client
+  - docker build -t sandi1/react-test -f ./client/Dockerfile ./client
 
 success:
-  - docker run sandi-o/react-test npm test -- --coverage
+  - docker run sand1/react-test npm test -- --coverage
 
 after_install:
-  - docker build -t sandi-o/multi-client ./client
-  - docker build -t sandi-o/multi-server ./server
-  - docker build -t sandi-o/multi-worker ./worker
-  - docker build -t sandi-o/multi-nginx ./nginx
-
+  - docker build -t sand1/multi-client ./client
+  - docker build -t sand1/multi-server ./server
+  - docker build -t sand1/multi-worker ./worker
+  - docker build -t sand1/multi-nginx ./nginx
+  # Log in to Docker CLI
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  # Take those images and push them to docker hub
+  - docker push sand1/multi-client
+  - docker push sand1/multi-server
+  - docker push sand1/multi-worker
+  - docker push sand1/multi-nginx
