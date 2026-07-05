@@ -1,0 +1,62 @@
+name: Deploy MultiDocker
+on:
+  push:
+    branches:
+      - main # check your repo, your default branch might be master!
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
+      - run: docker build -t sand1/react-test-up -f ./client/Dockerfile.dev ./client
+      - run: docker run -e CI=true sand1/react-test-up npm test
+
+      - run: docker build -t sand1/multi-client-up ./client
+      - run: docker build -t sand1/multi-nginx-up ./nginx
+      - run: docker build -t sand1/multi-server-up ./server
+      - run: docker build -t sand1/multi-worker-up ./worker
+
+      - run: docker push sand1/multi-client-up
+      - run: docker push sand1/multi-nginx-up
+      - run: docker push sand1/multi-server-up
+      - run: docker push sand1/multi-worker-up
+
+      - name: Generate deployment package
+        run: zip -r deploy.zip . -x '*.git*'
+
+      - name: Deploy to EB
+        uses: einaregilsson/beanstalk-deploy@v18
+        with:
+          aws_access_key: ${{ secrets.AWS_ACCESS_KEY }}
+          aws_secret_key: ${{ secrets.AWS_SECRET_KEY }}
+          application_name: multi-docker
+          environment_name: Multi-docker-env
+          existing_bucket_name: elasticbeanstalk-us-east-1-923445559289
+          region: us-east-1
+          version_label: ${{ github.sha }}
+          deployment_package: deploy.zip
+
+
+services:
+  - docker
+
+before_install:
+  - docker build -t sandi1/react-test -f ./client/Dockerfile ./client
+
+success:
+  - docker run sand1/react-test npm test -- --coverage
+
+after_install:
+  - docker build -t sand1/multi-client ./client
+  - docker build -t sand1/multi-server ./server
+  - docker build -t sand1/multi-worker ./worker
+  - docker build -t sand1/multi-nginx ./nginx
+  # Log in to Docker CLI
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  # Take those images and push them to docker hub
+  - docker push sand1/multi-client
+  - docker push sand1/multi-server
+  - docker push sand1/multi-worker
+  - docker push sand1/multi-nginx
