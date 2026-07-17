@@ -26,5 +26,5 @@ services:
     image: sand1/multi-server-up
     hostname: nginx
     mem_limit: 128m  
-    port: 
+    ports: 
       - 80:80
