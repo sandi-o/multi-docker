@@ -7,7 +7,9 @@ services:
     ports:
       - '3050:80'
   postgres:
-    image: 'postgres:latest'    
+    image: 'postgres:latest'
+    environment:
+      - POSTGRES_PASSWORD=postgres_password    
   redis:
     image: 'redis:latest'
   api:
