@@ -23,7 +23,7 @@ services:
       - REDIS_HOST=$REDIS_HOST
       - REDIS_PORT=$REDIS_PORT
   nginx:
-    image: sand1/multi-server-up
+    image: sand1/multi-nginx-up
     hostname: nginx
     mem_limit: 128m  
     ports: 
